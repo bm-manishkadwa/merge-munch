@@ -71,7 +71,7 @@ class Start extends Phaser.Scene {
         this.setupPlayButton();
         this.onOrientationChange();
         this.uiEditor = new UIEditor(this, {
-            enabled: true,
+            enabled: false,
             keys: this.getEditorKeys(),
             gridSize: 10,
             fileName: 'start.js'
