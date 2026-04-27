@@ -71,7 +71,7 @@ class Game extends Phaser.Scene {
 
         this.onOrientationChange();
         this.uiEditor = new UIEditor(this, {
-            enabled: true,
+            enabled: false,
             keys: this.getEditorKeys(),
             gridSize: 10,
             fileName: 'game.js'
