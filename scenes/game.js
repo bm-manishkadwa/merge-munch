@@ -271,8 +271,10 @@ class Game extends Phaser.Scene {
                     .setDepth(30);
 
                 // ✅ NEW SIZE SYSTEM
-                const size = this.itemSizes[type].board;
-                item.setDisplaySize(size, size);
+               const size = this.getBoardDisplaySize(item);
+if (size) {
+    item.setDisplaySize(size.width, size.height);
+}
 
                 this.input.setDraggable(item);
 
@@ -426,51 +428,80 @@ class Game extends Phaser.Scene {
         item.setDisplaySize(storageSize.w, storageSize.h);
     }
 
-    getBoardDisplaySize(item) {
-        if (!item) return null;
+  getBoardDisplaySize(item) {
+    if (!item) return null;
 
-        const baseSize = this.itemSizes?.[item.type]?.board;
-        if (!baseSize) return null;
+    const baseSize = this.itemSizes?.[item.type]?.board;
+    if (!baseSize) return null;
 
-        if (item.texture?.key === "stage2_2") {
-            return baseSize + 20;
-        }
+    // ✅ Only ONE increase step
+    const level2IncreaseMap = {
+        type1: 200,
+        type2: 10,
+        type3: 100,
+        type4: 100
+    };
 
-        return baseSize;
+    let size = baseSize;
+
+    if (item.level >= 2) {
+        size += level2IncreaseMap[item.type] || 10;
     }
 
+    // ❌ DO NOT increase for level 3
+    // level 3 stays same as level 2
+
+    if (item.type === "type1") {
+        return {
+            width: size,
+            height: baseSize // keep fixed height
+        };
+    }
+
+     if (item.type === "type3") {
+        return {
+            width: size,
+            height: baseSize // keep fixed height
+        };
+    }
+
+     if (item.type === "type4") {
+        return {
+            width: size,
+            height: baseSize // keep fixed height
+        };
+    }
+
+    return {
+        width: size,
+        height: size
+    };
+}
     updateItemAppearance(item) {
-        if (!item) return;
+    if (!item) return;
 
-        const index = this.types.indexOf(item.type) + 1;
+    const index = this.types.indexOf(item.type) + 1;
 
-        if (item.level === 1) {
-            item.setTexture(item.type);
-            item.clearTint();
-            return;
-        }
-
-        if (item.level === 2) {
-            item.setTexture(`stage2_${index}`);
-
-            const stage2TintMap = {
-                type1: 0xffffff ,
-                type2: 0xffffff,
-                type3: 0xffffff,
-                type4: 0xffffff
-            };
-
-            const tint = stage2TintMap[item.type];
-            if (tint !== undefined) item.setTint(tint);
-            else item.clearTint();
-            return;
-        }
-
-        if (item.level === 3) {
-            item.setTexture(`stage3_${index}`);
-            item.clearTint();
-        }
+    if (item.level === 1) {
+        item.setTexture(item.type);
     }
+
+    if (item.level === 2) {
+        item.setTexture(`stage2_${index}`);
+    }
+
+    if (item.level === 3) {
+        item.setTexture(`stage3_${index}`);
+    }
+
+    item.clearTint();
+
+    // 🔥 IMPORTANT: reapply size AFTER texture change
+    const size = this.getBoardDisplaySize(item);
+if (size) {
+    item.setDisplaySize(size.width, size.height); // ✅
+}
+}
 
     merge(target, source) {
         source.destroy();
@@ -478,8 +509,8 @@ class Game extends Phaser.Scene {
 
         target.level++;
         this.updateItemAppearance(target);
-        const mergedSize = this.getBoardDisplaySize(target);
-        if (mergedSize) target.setDisplaySize(mergedSize, mergedSize);
+        const size = this.getBoardDisplaySize(target);
+if (size) target.setDisplaySize(size.width, size.height); // ✅
 
         if (target.level === 3) {
             this.moveToStorage(target);
@@ -581,7 +612,7 @@ class Game extends Phaser.Scene {
 
         this.updateItemAppearance(item);
         const size = this.getBoardDisplaySize(item);
-        if (size) item.setDisplaySize(size, size);
+if (size) item.setDisplaySize(size.width, size.height); // ✅
         item.setDepth(30);
 
         this.tweenToGrid(item, openCell.col, openCell.row);
@@ -604,10 +635,10 @@ class Game extends Phaser.Scene {
 
             if (typeof item.col !== "number" || typeof item.row !== "number") return;
 
-            const boardSize = this.getBoardDisplaySize(item);
-            if (boardSize) {
-                item.setDisplaySize(boardSize, boardSize);
-            }
+            const size = this.getBoardDisplaySize(item);
+if (size) {
+    item.setDisplaySize(size.width, size.height); // ✅
+}
 
             item.setPosition(
                 this.offsetX + item.col * this.cell,
